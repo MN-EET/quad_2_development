@@ -35,3 +35,5 @@ Thumbs.db
 *.sublime-workspace
 *.sublime-project
 
+# .env
+.env
