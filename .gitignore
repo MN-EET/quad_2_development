@@ -1,0 +1,37 @@
+# Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# PyCharm project files
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Log files
+*.log
+
+# Test coverage reports
+*.coverage
+.coverage.*
+.tox/
+.nox/
+.hypothesis/
+.pytest_cache/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
