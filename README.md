@@ -14,7 +14,43 @@ the Minnesota Department of Commerce's online version of the State Energy Policy
 <details>
 <summary>Setup Instructions</summary>
 
-In order to set up the project repository on your computer you will need...
+In order to setup the project on your local computer, follow these steps:
+
+### Prerequisites
+- Install python 3.12.6: [Download here](https://www.python.org/downloads/)
+
+### Clone the project repository
+```commandline
+git clone https://github.com/MN-EET/quad_2_development
+```
+### Create and activate your virtual environment
+
+```commandline
+python -m venv venv
+```
+
+```commandline
+sourcve venv/bin/activate
+```
+Install all required packages:
+
+```commandline
+pip install -r requirements.txt
+```
+
+Copy .env.example to .env:
+```commandline
+cp .env.example .env
+```
+Transfer any required API keys to .env. (For more details, see data documentation in docs).
+
+### Folder Structure
+make sure the following folders exist:
+```commandline
+/docs
+/scripts
+```
+
 
 </details>
 
