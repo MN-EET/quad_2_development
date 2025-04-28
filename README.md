@@ -1,11 +1,11 @@
 # Quad 2.0
 
 ## Table of Contents
--[Project Overview](#overview)
--[Setup Instructions](#setup-instructions)
--[Data Sources](#data-sources)
--[ETL Process](#etl-process)
--[Dashboards](#dashboards)
+- [Project Overview](#overview)
+- [Setup Instructions](#setup-instructions)
+- [Data Sources](#data-sources)
+- [ETL Process](#etl-process)
+- [Dashboards](#dashboards)
 
 ## Overview
 Welcome to the code repository of Quad 2.0! This site will contain all the code used to generate the data displayed in 
