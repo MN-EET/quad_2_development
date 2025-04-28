@@ -1,70 +1,72 @@
 import pandas as pd
 from requests import get
-import os
-from dotenv import load_dotenv
+#import os
+#from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 # load API keys
-eia_key = os.getenv("EIA_API_KEY")
+#eia_key = os.getenv("EIA_API_KEY")
 
-# Query EIA
+def fetch_generation(eia_key: str, destdir: str):
 
-response = get("https://api.eia.gov/v2/electricity/electric-power-operational-data/data?api_key=" + eia_key + "&data[]=generation&frequency=annual&facets[location][]=MN&frequency=annual&facets[sectorid][]=99").json()
+    # Query EIA
 
-raw_generation = pd.json_normalize(response['response']['data'])
+    response = get("https://api.eia.gov/v2/electricity/electric-power-operational-data/data?api_key=" + eia_key + "&data[]=generation&frequency=annual&facets[location][]=MN&frequency=annual&facets[sectorid][]=99").json()
 
-# Clean up raw data
+    raw_generation = pd.json_normalize(response['response']['data'])
 
-fuels_keep = ["BIO", "HYC", "SUN", "WND", "COW", "NG", "PEL", "NUC", "OTH", "ALL", "AOR"]
-columns_keep = ['period', 'fuelTypeDescription', 'generation', ]
+    # Clean up raw data
 
-mn_generation = raw_generation.loc[raw_generation['fueltypeid'].isin(fuels_keep), columns_keep]
-mn_generation['generation'] = mn_generation['generation'].astype(float)
+    fuels_keep = ["BIO", "HYC", "SUN", "WND", "COW", "NG", "PEL", "NUC", "OTH", "ALL", "AOR"]
+    columns_keep = ['period', 'fuelTypeDescription', 'generation', ]
 
-# subset hydro values to add to renewables
+    mn_generation = raw_generation.loc[raw_generation['fueltypeid'].isin(fuels_keep), columns_keep]
+    mn_generation['generation'] = mn_generation['generation'].astype(float)
 
-hydro_values = mn_generation.loc[mn_generation['fuelTypeDescription'] == 'conventional hydroelectric', ['period', 'generation']].rename(columns = {'generation': 'hydro_generation'}).set_index('period')
-hydro_values['hydro_generation'] = hydro_values['hydro_generation'].astype(float)
+    # subset hydro values to add to renewables
 
-#add renewables and hydro together
+    hydro_values = mn_generation.loc[mn_generation['fuelTypeDescription'] == 'conventional hydroelectric', ['period', 'generation']].rename(columns = {'generation': 'hydro_generation'}).set_index('period')
+    hydro_values['hydro_generation'] = hydro_values['hydro_generation'].astype(float)
 
-mn_generation.loc[mn_generation['fuelTypeDescription'] == 'all renewables', 'generation'] += (
-    mn_generation.loc[mn_generation['fuelTypeDescription'] == 'all renewables', 'period'].map(hydro_values['hydro_generation'])
-)
+    #add renewables and hydro together
 
-# calculate as percentage of total generation
+    mn_generation.loc[mn_generation['fuelTypeDescription'] == 'all renewables', 'generation'] += (
+        mn_generation.loc[mn_generation['fuelTypeDescription'] == 'all renewables', 'period'].map(hydro_values['hydro_generation'])
+    )
 
-total_gen = mn_generation.loc[mn_generation['fuelTypeDescription'] == 'all fuels']
+    # calculate as percentage of total generation
 
-total_gen = total_gen.set_index('period')['generation']
+    total_gen = mn_generation.loc[mn_generation['fuelTypeDescription'] == 'all fuels']
 
-mn_generation['percent_generation'] = mn_generation['generation'] / mn_generation['period'].map(total_gen)
+    total_gen = total_gen.set_index('period')['generation']
 
-# clean up names and data types
+    mn_generation['percent_generation'] = mn_generation['generation'] / mn_generation['period'].map(total_gen)
 
-mn_generation = mn_generation.rename(columns = {'period': 'year', 'fuelTypeDescription': 'fuel_type', 'generation': 'generation_thousand_mwh'})
-mn_generation['year'] = mn_generation['year'].astype(int)
+    # clean up names and data types
 
-# rename fuel types
+    mn_generation = mn_generation.rename(columns = {'period': 'year', 'fuelTypeDescription': 'fuel_type', 'generation': 'generation_thousand_mwh'})
+    mn_generation['year'] = mn_generation['year'].astype(int)
 
-new_fuels = {
-    'all renewables': 'Renewables',
-    'conventional hydroelectric': 'Hydroelectric',
-    'all coal products': 'Coal',
-    'other': 'Other',
-    'petroleum liquids': 'Petroleum Liquids',
-    'wind': 'Wind',
-    'natural gas': 'Natural Gas',
-    'nuclear': 'Nuclear',
-    'all fuels': 'All Fuels',
-    'biomass': 'Biomass',
-    'solar': 'Solar'
-}
+    # rename fuel types
 
-mn_generation['fuel_type'] = mn_generation['fuel_type'].replace(new_fuels)
+    new_fuels = {
+        'all renewables': 'Renewables',
+        'conventional hydroelectric': 'Hydroelectric',
+        'all coal products': 'Coal',
+        'other': 'Other',
+        'petroleum liquids': 'Petroleum Liquids',
+        'wind': 'Wind',
+        'natural gas': 'Natural Gas',
+        'nuclear': 'Nuclear',
+        'all fuels': 'All Fuels',
+        'biomass': 'Biomass',
+        'solar': 'Solar'
+    }
 
-# set destination directory to upload to sharepoint
-destdir = r'C:\Users\dduffy\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - Documents\data'
+    mn_generation['fuel_type'] = mn_generation['fuel_type'].replace(new_fuels)
 
-mn_generation.to_csv(destdir + '/mn_electricity_generation.csv', index = False)
+    # set destination directory to upload to sharepoint
+    # destdir = r'C:\Users\dduffy\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - Documents\data'
+
+    mn_generation.to_csv(destdir + '/mn_electricity_generation.csv', index = False)

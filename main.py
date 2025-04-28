@@ -3,15 +3,33 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import os
+from dotenv import load_dotenv
+from scripts.electricity_generation import fetch_generation
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
+
+# Run electricity_generation.py
+
+# Define main
+
+def main():
+    # load environmental variables
+    load_dotenv()
+    eia_key = os.getenv("EIA_API_KEY")
+
+    # Specify directory to write file to
+    destdir = r'C:\Users\dduffy\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - Documents\data'
+
+    # fetch generation data
+    fetch_generation(eia_key, destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    main()
+
+
+
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
