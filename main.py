@@ -6,7 +6,7 @@
 import os
 from dotenv import load_dotenv
 from scripts.electricity_generation import fetch_generation
-from scripts.monthly_coal import fetch_monthly_coal
+from scripts.monthly_generation import fetch_monthly_gen
 
 # Define main
 
@@ -21,8 +21,8 @@ def main():
     # fetch generation data
     fetch_generation(eia_key, destdir)
 
-    # fetch monthly coal generation data
-    fetch_monthly_coal(eia_key, destdir)
+    # fetch monthly generation generation data
+    fetch_monthly_gen(eia_key, destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

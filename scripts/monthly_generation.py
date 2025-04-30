@@ -1,7 +1,7 @@
 import pandas as pd
 from requests import get
 
-def fetch_monthly_coal(eia_key: str, destdir: str):
+def fetch_monthly_gen(eia_key: str, destdir: str):
 
     # query EIA for monthly coal generation data in Minnesota
     response = get(
