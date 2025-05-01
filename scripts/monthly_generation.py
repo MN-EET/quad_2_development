@@ -24,4 +24,29 @@ def fetch_monthly_gen(eia_key: str, destdir: str):
 
     gen_data = gen_data[['period', 'fuelTypeDescription', 'generation']]
 
+    # rename fuel types for the dashboard
+    def rename_fuels(x):
+        if x == 'all coal products':
+            return "Coal"
+        elif x == 'all fuels':
+            return 'All Fuels'
+        elif x == 'all renewables':
+            return 'All Renewables'
+        elif x == 'biomass':
+            return 'Biomass'
+        elif x == 'conventional hydroelectric':
+            return 'Hydroelectric'
+        elif x == 'natural gas':
+            return 'Natural Gas'
+        elif x == 'nuclear':
+            return 'Nuclear'
+        elif x == 'solar':
+            return 'Solar'
+        elif x == 'wind':
+            return 'Wind'
+        else:
+            return 'Other'
+
+    gen_data['fuelTypeDescription'] = gen_data['fuelTypeDescription'].map(lambda x: rename_fuels(x))
+
     gen_data.to_csv(destdir + '/monthly_electricity_generation.csv', index=False)
