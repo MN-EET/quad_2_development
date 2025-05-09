@@ -22,8 +22,6 @@ def fetch_monthly_gen(eia_key: str, destdir: str):
         gen_data.loc[gen_data['fuelTypeDescription'] == 'all renewables', 'period'].map(hydro_values['hydro_gen'])
     )
 
-    gen_data = gen_data[['period', 'fuelTypeDescription', 'generation']]
-
     # rename fuel types for the dashboard
     def rename_fuels(x):
         if x == 'all coal products':
@@ -48,5 +46,15 @@ def fetch_monthly_gen(eia_key: str, destdir: str):
             return 'Other'
 
     gen_data['fuelTypeDescription'] = gen_data['fuelTypeDescription'].map(lambda x: rename_fuels(x))
+
+    # calculate monthly percentage of generation
+    total_gen = gen_data.loc[gen_data['fuelTypeDescription'] == 'All Fuels', ['period', 'generation']].set_index(
+        'period')
+
+    gen_data['percent_generation'] = gen_data['generation'] / (gen_data['period'].map(total_gen['generation']))
+
+    # subset data set and write to csv
+
+    gen_data = gen_data[['period', 'fuelTypeDescription', 'generation','percent_generation']]
 
     gen_data.to_csv(destdir + '/monthly_electricity_generation.csv', index=False)
