@@ -30,7 +30,7 @@ python -m venv venv
 ```
 
 ```commandline
-sourcve venv/bin/activate
+source venv/bin/activate
 ```
 Install all required packages:
 
