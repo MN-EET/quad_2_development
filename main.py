@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from scripts.electricity_generation import fetch_generation
 from scripts.monthly_generation import fetch_monthly_gen
 from scripts.natural_gas import fetch_henry_hub
+from scripts.miso_hourly import fetch_miso_hourly
 
 
 # Define main
@@ -28,6 +29,9 @@ def main():
 
     # fetch henry hub natural gas spot prices
     fetch_henry_hub(eia_key, destdir)
+
+    # fetch hourly nuclear data
+    fetch_miso_hourly(eia_key, destdir)
 
 
 
