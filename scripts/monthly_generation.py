@@ -52,7 +52,6 @@ def fetch_monthly_gen(eia_key: str, destdir: str):
         'period')
 
     gen_data['percent_generation'] = gen_data['generation'] / (gen_data['period'].map(total_gen['generation']))
-
     # subset data set and write to csv
 
     gen_data = gen_data[['period', 'fuelTypeDescription', 'generation','percent_generation']]
