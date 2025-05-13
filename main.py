@@ -7,6 +7,8 @@ import os
 from dotenv import load_dotenv
 from scripts.electricity_generation import fetch_generation
 from scripts.monthly_generation import fetch_monthly_gen
+from scripts.natural_gas import fetch_henry_hub
+
 
 # Define main
 
@@ -23,6 +25,11 @@ def main():
 
     # fetch monthly generation generation data
     fetch_monthly_gen(eia_key, destdir)
+
+    # fetch henry hub natural gas spot prices
+    fetch_henry_hub(eia_key, destdir)
+
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
