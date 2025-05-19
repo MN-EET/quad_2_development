@@ -9,7 +9,7 @@ from scripts.electricity_generation import fetch_generation
 from scripts.monthly_generation import fetch_monthly_gen
 from scripts.natural_gas import fetch_henry_hub
 from scripts.miso_hourly import fetch_miso_hourly
-
+from scripts.nuclear_facilities import fetch_nuclear_facilities
 
 # Define main
 
@@ -32,6 +32,9 @@ def main():
 
     # fetch hourly nuclear data
     fetch_miso_hourly(eia_key, destdir)
+
+    # fetch nuclear facilities
+    fetch_nuclear_facilities(eia_key, destdir)
 
 
 
