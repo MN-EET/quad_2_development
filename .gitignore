@@ -15,6 +15,10 @@ ENV/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
+# Jupyter Notebooks for development
+MISO Hourly Pull.ipynb
+Nuclear Locations Dev.ipynb
+
 # Log files
 *.log
 
