@@ -11,6 +11,7 @@ from scripts.natural_gas import fetch_henry_hub
 from scripts.miso_hourly import fetch_miso_hourly
 from scripts.nuclear_facilities import fetch_nuclear_facilities
 from scripts.battery_capacity import fetch_battery_capacity
+from scripts.miso_queue import fetch_miso_queue
 
 # Define main
 
@@ -39,6 +40,9 @@ def main():
 
     # fetch battery capacity
     fetch_battery_capacity(eia_key, destdir)
+
+    # fetch MISO queue
+    fetch_miso_queue(destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
