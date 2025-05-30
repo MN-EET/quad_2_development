@@ -18,6 +18,11 @@ ENV/
 # Jupyter Notebooks for development
 MISO Hourly Pull.ipynb
 Nuclear Locations Dev.ipynb
+Battery Capacity dev.ipynb
+MISO Queue Dev.ipynb
+
+# Generator database
+generator_database.duckdb
 
 # Log files
 *.log
