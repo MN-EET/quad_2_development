@@ -22,7 +22,7 @@ Battery Capacity dev.ipynb
 MISO Queue Dev.ipynb
 
 # Generator database
-generator_database.duckdb
+duckdb_storage/generator_database.duckdb
 
 # Log files
 *.log
