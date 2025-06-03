@@ -1,1 +1,1 @@
-# Overview of geenrator_dbt_project
+# Overview of generator_dbt_project
