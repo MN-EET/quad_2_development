@@ -46,3 +46,8 @@ Thumbs.db
 
 # .env
 .env
+
+# dbt files
+generator_dbt_project/target/
+generator_dbt_project/dbt_packages/
+generator_dbt_project/logs/
