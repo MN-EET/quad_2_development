@@ -19,18 +19,7 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_t
     raw_der = pd.read_excel(puc_url)
 
     # Clean up the DER file
-    der_table = (
-        raw_der
-        .loc[
-            raw_der['DER Status'].str.lower() == 'interconnected',
-            ['DER Capacity kW AC', 'Utility', 'DER Type', 'Year Interconnected', 'Customer Type']
-        ]
-        .rename(columns={'DER Capacity kW AC': 'kwac',
-                         'Utility': 'utility',
-                         'Year Interconnected': 'year_interconnected',
-                         'DER Type': 'technology',
-                         'Customer Type': 'customer_type'})
-    )
+    der_table = raw_der.clean_names()
 
     # Pull EIA 860 generators table
 
@@ -41,11 +30,13 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_t
         with z.open('3_1_Generator_Y2023.xlsx') as file:
             eia_generators = pd.read_excel(file, skiprows=1).clean_names()
 
-    eia_table = (
-        eia_generators.loc[eia_generators['state'] == 'MN',
-        ['utility_id', 'utility_name', 'plant_code', 'plant_name', 'state', 'county', 'generator_id', 'technology',
-         'nameplate_capacity_mw_', 'operating_year', 'sector_name']]
-    )
+    eia_table = eia_generators.clean_names()
+
+    # Coerce utlity IDs to numeric to scrap the comment that is typically at the bottom of the table
+    eia_table['utility_id'] = pd.to_numeric(eia_table['utility_id'], errors = "coerce")
+
+    # Drop rows with null utility IDs
+    eia_table = eia_table.dropna(subset = ['utility_id'])
 
     # Create database path
     base_dir = os.path.dirname(__file__)
@@ -61,15 +52,20 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_t
         WHERE table_name = '{puc_table_name}'
     """).fetchone()[0] > 0
 
-    if not table_exists:
-        # Register DataFrame as a temp view
-        db.register('der_table_view', der_table)
+    # Register DataFrame as a temp view
+    db.register('der_table_view', der_table)
 
+    if not table_exists:
     # Create puc der table in duckdb from the der_table
         db.execute(f"CREATE TABLE {puc_table_name} AS SELECT *, CURRENT_TIMESTAMP AS created_at FROM der_table_view")
         print(f"Table '{puc_table_name}' created.")
     else:
-        print(f"Table '{puc_table_name}' already exists.")
+        db.execute(f"""
+               INSERT INTO {puc_table_name}
+               SELECT *, CURRENT_TIMESTAMP AS created_at 
+               FROM der_table_view
+           """)
+        print(f"Data appended to existing table '{puc_table_name}'.")
 
     # Write EIA table
     table_exists = db.execute(f"""
@@ -78,14 +74,19 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_t
             WHERE table_name = '{eia_table_name}'
         """).fetchone()[0] > 0
 
-    if not table_exists:
-        # Register DataFrame as a temp view
-        db.register('eia_table_view', eia_table)
+    # Register DataFrame as a temp view
+    db.register('eia_table_view', eia_table)
 
+    if not table_exists:
     # Create EIA 860 table in duckdb from the der_table
         db.execute(f"CREATE TABLE {eia_table_name} AS SELECT *, CURRENT_TIMESTAMP AS created_at FROM eia_table_view")
         print(f"Table '{eia_table_name}' created.")
     else:
-        print(f"Table '{eia_table_name}' already exists.")
+        db.execute(f"""
+                      INSERT INTO {eia_table_name}
+                      SELECT *, CURRENT_TIMESTAMP AS created_at 
+                      FROM eia_table_view
+                  """)
+        print(f"Data appended to existing table '{eia_table_name}'.")
 
     db.close()
