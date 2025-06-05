@@ -1,5 +1,0 @@
-version: 2
-
-models:
-  - name: puc_solar_capacity
-    description: "solar capacity from puc der file"
