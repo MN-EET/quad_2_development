@@ -14,12 +14,13 @@ further transformed and used for the solar capacity dashboards and the capacity 
 PUC DER table is available here: https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/
 EIA 860 Files available here: https://www.eia.gov/electricity/data/eia860/
 """
-def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_table_name: str):
+def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_table_name: str, report_year: int):
     # Read in latest version of the PUC's DER file
     raw_der = pd.read_excel(puc_url)
 
     # Clean up the DER file
-    der_table = raw_der.clean_names()
+    der_table = raw_der.clean_names().copy()
+    der_table.loc[:, 'report_year'] = report_year
 
     # Pull EIA 860 generators table
 
@@ -27,10 +28,21 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_t
     #zip_bytes = io.BytesIO(response.content)
 
     with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-        with z.open('3_1_Generator_Y2023.xlsx') as file:
-            eia_generators = pd.read_excel(file, skiprows=1).clean_names()
+        # Find the file that starts with "3_1_Generator"
+        eia_table = next(
+            (name for name in z.namelist() if name.startswith("3_1_Generator") and name.endswith(".xlsx")),
+            None
+        )
 
-    eia_table = eia_generators.clean_names()
+        if eia_table is None:
+            raise FileNotFoundError("No file starting with '3_1_Generator' found in the ZIP archive.")
+
+        with z.open(eia_table) as file:
+            eia_table = pd.read_excel(file, skiprows=1)
+
+    # clean up names and create report year column
+    eia_table = eia_table.clean_names().copy()
+    eia_table.loc[:, 'report_year'] = report_year
 
     # Coerce utlity IDs to numeric to scrap the comment that is typically at the bottom of the table
     eia_table['utility_id'] = pd.to_numeric(eia_table['utility_id'], errors = "coerce")
