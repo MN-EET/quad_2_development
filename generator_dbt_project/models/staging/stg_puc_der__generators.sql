@@ -12,6 +12,9 @@ SELECT
 	der_status,
 	customer_type,
 	year_interconnected,
-	created_at
+	created_at,
+	report_year
 
 FROM main.raw_puc_der rpd
+
+WHERE created_at = (SELECT MAX(created_at) FROM main.raw_puc_der)

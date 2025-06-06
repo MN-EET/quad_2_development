@@ -14,6 +14,9 @@ SELECT
 	nameplate_capacity_mw_ * 1000 AS nameplate_kw,
 	operating_year,
 	sector_name,
-	created_at
+	created_at,
+	report_year
 
 FROM main.raw_eia_860_generators reg
+
+WHERE created_at = (SELECT MAX(created_at) FROM main.raw_eia_860_generators)

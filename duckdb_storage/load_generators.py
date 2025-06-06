@@ -4,4 +4,4 @@ build_generator_table("https://mn.gov/puc/assets/PUBLIC%20MN%20Utility%20Report%
                       "https://www.eia.gov/electricity/data/eia860/xls/eia8602023.zip",
                       "raw_puc_der",
                       "raw_eia_860_generators",
-                      2024)
+                      2023)
