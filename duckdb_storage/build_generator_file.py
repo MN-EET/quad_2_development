@@ -14,7 +14,9 @@ further transformed and used for the solar capacity dashboards and the capacity 
 PUC DER table is available here: https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/
 EIA 860 Files available here: https://www.eia.gov/electricity/data/eia860/
 """
-def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_table_name: str, report_year: int):
+def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
+                          eia_table_name: str, report_year: int, env = "dev" #or prod
+    ):
     # Read in latest version of the PUC's DER file
     raw_der = pd.read_excel(puc_url)
 
@@ -51,10 +53,16 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str, eia_t
     eia_table = eia_table.dropna(subset = ['utility_id'])
 
     # Create database path
-    base_dir = os.path.dirname(__file__)
-    storage_dir = os.path.join(base_dir, 'duckdb_storage')
+    storage_dir = os.path.dirname(__file__)
+    #storage_dir = os.pabase_dir, 'duckdb_storage')
     os.makedirs(storage_dir, exist_ok=True)
-    db_path = os.path.join(os.path.dirname(__file__), 'generator_database.duckdb')
+
+    # Choose between dev and prod
+    if env not in ("dev", "prod"):
+        raise ValueError("env must be either 'dev' or 'prod'")
+
+    db_filename = f"{env}.duckdb"
+    db_path = os.path.join(storage_dir, db_filename)
     db = duckdb.connect(db_path)
 
     # Check if puc_table name already exists

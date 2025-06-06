@@ -9,4 +9,4 @@ SELECT DISTINCT generation_type,
 		ELSE generation_type
 	END AS translation_name
 
-FROM main.stg_puc_der__generators
+FROM {{ ref('stg_puc_der__generators') }}

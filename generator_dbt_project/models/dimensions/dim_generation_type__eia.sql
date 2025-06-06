@@ -14,7 +14,7 @@ SELECT DISTINCT generation_type,
 		ELSE generation_type
 	END AS translation_name
 
-FROM main.stg_eia__generators
+FROM {{ ref('stg_eia__generators') }}
 -- Only for MN generators which are the primary concern here
 WHERE state = 'MN'
 
