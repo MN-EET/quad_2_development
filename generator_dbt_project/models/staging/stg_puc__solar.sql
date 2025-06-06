@@ -12,6 +12,7 @@ LEFT JOIN {{ ref('dim_generator_type__puc') }}  AS b
 
 WHERE LOWER(a.der_status) = 'interconnected'
 	AND b.translation_name = 'Solar'
-	--AND a.year_interconnected IS NOT NULL
-	AND a.year_interconnected <= a.report_year
-
+	AND (
+	    a.year_interconnected <= a.report_year
+	    OR a.year_interconnected IS NUll -- keep null values in the year interconnected as it appears these are actually connected
+    )
