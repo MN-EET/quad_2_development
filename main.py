@@ -12,6 +12,7 @@ from scripts.miso_hourly import fetch_miso_hourly
 from scripts.nuclear_facilities import fetch_nuclear_facilities
 from scripts.battery_capacity import fetch_battery_capacity
 from scripts.miso_queue import fetch_miso_queue
+from scripts.qry_solar_mart import fetch_solar_capacity
 
 # Define main
 
@@ -32,7 +33,7 @@ def main():
     # fetch henry hub natural gas spot prices
     fetch_henry_hub(eia_key, destdir)
 
-    # fetch hourly nuclear data
+    # fetch miso hourly
     fetch_miso_hourly(eia_key, destdir)
 
     # fetch nuclear facilities
@@ -43,6 +44,10 @@ def main():
 
     # fetch MISO queue
     fetch_miso_queue(destdir)
+
+    # fetch solar capacity
+    db = 'duckdb_storage/prod.duckdb'
+    fetch_solar_capacity(db, destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
