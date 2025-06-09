@@ -24,6 +24,8 @@ MISO Queue Dev.ipynb
 # Generator database
 duckdb_storage/dev.duckdb
 duckdb_storage/generator_database.duckdb
+duckdb_storage/prod.duckdb
+
 # Log files
 *.log
 
