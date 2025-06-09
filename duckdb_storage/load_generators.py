@@ -5,4 +5,4 @@ build_generator_table("https://mn.gov/puc/assets/PUBLIC%20MN%20Utility%20Report%
                       "raw_puc_der",
                       "raw_eia_860_generators",
                       2023,
-                      env = "dev") # or prod
+                      env = "dev") # dev or prod
