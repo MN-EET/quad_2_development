@@ -31,10 +31,18 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   generator_dbt_project:
-    # Config indicated by + and applies to all files under models/example/
-    staging:
-      materialized: view
-    dimensions:
-      materialized: view
-    marts:
-      materialized: table
+    solar:
+      staging:
+        materialized: view
+      dimensions:
+        materialized: view
+      marts:
+        materialized: table
+    wind:
+      staging:
+        materialized: view
+      dimensions:
+        materialized: view
+      marts:
+        materialized: table
+
