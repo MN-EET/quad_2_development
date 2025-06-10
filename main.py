@@ -13,6 +13,7 @@ from scripts.nuclear_facilities import fetch_nuclear_facilities
 from scripts.battery_capacity import fetch_battery_capacity
 from scripts.miso_queue import fetch_miso_queue
 from scripts.qry_solar_mart import fetch_solar_capacity
+from scripts.qry_wind_mart import fetch_wind_capacity
 
 # Define main
 
@@ -46,8 +47,11 @@ def main():
     fetch_miso_queue(destdir)
 
     # fetch solar capacity
-    db = 'duckdb_storage/prod.duckdb'
+    db = 'duckdb_storage/prod.duckdb' # use this database to export all capacity figures
     fetch_solar_capacity(db, destdir)
+
+    # fetch wind capacity
+    fetch_wind_capacity(db, destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
