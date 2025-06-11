@@ -1,6 +1,5 @@
-/*
-    Select generator info from raw EIA 860 file.
-*/
+-- Select generator info from raw EIA 860 file.
+
 
 SELECT
 	utility_id,

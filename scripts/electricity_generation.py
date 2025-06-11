@@ -50,12 +50,12 @@ def query_generation(area: str, area_label: str, eia_key: str):
         'all coal products': 'Coal',
         'other': 'Other',
         'petroleum liquids': 'Petroleum Liquids',
-        'wind': 'Wind',
+        'wind': 'wind',
         'natural gas': 'Natural Gas',
         'nuclear': 'Nuclear',
         'all fuels': 'All Fuels',
         'biomass': 'Biomass',
-        'solar': 'Solar'
+        'solar': 'solar'
     }
 
     total_generation['fuel_type'] = total_generation['fuel_type'].replace(new_fuels)

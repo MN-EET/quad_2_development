@@ -1,6 +1,4 @@
-/*
-    Select generator information from RAW PUC DER file.
-*/
+-- Select generator information from RAW PUC DER file.
 
 SELECT
 	utility,

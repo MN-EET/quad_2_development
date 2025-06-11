@@ -39,9 +39,9 @@ def fetch_monthly_gen(eia_key: str, destdir: str):
         elif x == 'nuclear':
             return 'Nuclear'
         elif x == 'solar':
-            return 'Solar'
+            return 'solar'
         elif x == 'wind':
-            return 'Wind'
+            return 'wind'
         else:
             return 'Other'
 
