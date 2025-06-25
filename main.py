@@ -14,6 +14,7 @@ from scripts.battery_capacity import fetch_battery_capacity
 from scripts.miso_queue import fetch_miso_queue
 from scripts.qry_solar_mart import fetch_solar_capacity
 from scripts.qry_wind_mart import fetch_wind_capacity
+from scripts.qry_storage_mart import fetch_storage_capacity
 
 # Define main
 
@@ -26,13 +27,13 @@ def main():
     destdir = r'C:\Users\dduffy\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - Documents\data'
 
     # fetch generation data
-    fetch_generation(eia_key, destdir)
+    #fetch_generation(eia_key, destdir)
 
     # fetch monthly generation generation data
-    fetch_monthly_gen(eia_key, destdir)
+    #fetch_monthly_gen(eia_key, destdir)
 
     # fetch henry hub natural gas spot prices
-    fetch_henry_hub(eia_key, destdir)
+    #fetch_henry_hub(eia_key, destdir)
 
     # fetch miso hourly
     fetch_miso_hourly(eia_key, destdir)
@@ -52,6 +53,9 @@ def main():
 
     # fetch wind capacity
     fetch_wind_capacity(db, destdir)
+
+    # fetch storage capacity
+    fetch_storage_capacity(db, destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

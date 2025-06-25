@@ -1,5 +1,6 @@
 -- Select large solar generators from EIA file
 SELECT nameplate_kw,
+    nameplate_mw,
 	utility_name AS utility,
 	'Solar' AS technology,
 	operating_year AS year_interconnected

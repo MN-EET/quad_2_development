@@ -1,5 +1,6 @@
 -- Select storage installations from PUC file
 SELECT nameplate_kw,
+    nameplate_mw,
 	utility,
 	generation_type AS technology,
 	year_interconnected

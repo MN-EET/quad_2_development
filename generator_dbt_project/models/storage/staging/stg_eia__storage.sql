@@ -1,5 +1,6 @@
 -- Select large battery installations from EIA file
-SELECT nameplate_kw, 
+SELECT nameplate_kw,
+    nameplate_mw,
 	utility_name AS utility, 
 	generation_type AS technology, 
 	operating_year AS year_interconnected

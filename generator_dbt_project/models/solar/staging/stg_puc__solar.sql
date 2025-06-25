@@ -1,5 +1,6 @@
 -- Select puc solar generators
 SELECT a.nameplate_kw,
+    a.nameplate_mw,
 	a.utility,
 	b.translation_name AS technology,
 	a.year_interconnected,

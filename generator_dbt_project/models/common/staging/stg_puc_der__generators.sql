@@ -6,6 +6,7 @@ SELECT
 	eia_id,
 	utility_type,
 	der_capacity_kw_ac AS nameplate_kw,
+	der_capacity_kw_ac / 1000 AS nameplate_mw,
 	der_type AS generation_type,
 	der_status,
 	customer_type,
