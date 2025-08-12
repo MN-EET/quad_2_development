@@ -2,8 +2,14 @@ import pandas as pd
 import requests
 
 def fetch_miso_queue(destdir):
+
+    # Define headers for MISO API
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
     url = "https://www.misoenergy.org/api/giqueue/getprojects"
-    response = requests.get(url)
+    response = requests.get(url, headers = headers)
     data = response.json()
     miso_queue = pd.DataFrame(data)
 

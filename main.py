@@ -15,6 +15,7 @@ from scripts.miso_queue import fetch_miso_queue
 from scripts.qry_solar_mart import fetch_solar_capacity
 from scripts.qry_wind_mart import fetch_wind_capacity
 from scripts.qry_storage_mart import fetch_storage_capacity
+from scripts.miso_annual import fetch_miso_annual
 
 # Define main
 
@@ -38,6 +39,9 @@ def main():
     # fetch miso hourly
     fetch_miso_hourly(eia_key, destdir)
 
+    # fetch annual MISO generation data
+    fetch_miso_annual(eia_key, destdir)
+
     # fetch nuclear facilities
     fetch_nuclear_facilities(eia_key, destdir)
 
@@ -56,6 +60,7 @@ def main():
 
     # fetch storage capacity
     fetch_storage_capacity(db, destdir)
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
