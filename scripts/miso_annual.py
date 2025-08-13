@@ -79,6 +79,7 @@ def fetch_miso_annual(eia_key: str, destdir: str):
     hydro = fetch_data('WAT')
     wind = fetch_data('WND')
 
+
     hourly_gen = pd.concat([nuclear, coal, natural_gas, other, solar, hydro, wind])
 
     # aggregate monthly and annual averages
