@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw_data
-    schema: main
+    schema: generators
     tables:
       - name: puc_der_2023
       - name: eia_860_generators_2023

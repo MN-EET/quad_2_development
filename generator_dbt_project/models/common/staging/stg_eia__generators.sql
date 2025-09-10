@@ -16,6 +16,6 @@ SELECT
 	created_at,
 	report_year
 
-FROM main.raw_eia_860_generators reg
+FROM generators.raw_eia_860_generators reg
 
 WHERE created_at = (SELECT MAX(created_at) FROM main.raw_eia_860_generators)
