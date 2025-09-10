@@ -4,6 +4,7 @@ import zipfile
 import io
 import janitor
 import duckdb
+from pathlib import Path
 import os
 
 """
@@ -27,7 +28,6 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
     # Pull EIA 860 generators table
 
     response = get(eia_url)
-    #zip_bytes = io.BytesIO(response.content)
 
     with zipfile.ZipFile(io.BytesIO(response.content)) as z:
         # Find the file that starts with "3_1_Generator"
@@ -53,60 +53,47 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
     eia_table = eia_table.dropna(subset = ['utility_id'])
 
     # Create database path
-    storage_dir = os.path.dirname(__file__)
-    #storage_dir = os.pabase_dir, 'duckdb_storage')
-    os.makedirs(storage_dir, exist_ok=True)
+    # Resolve the script path and the project root
+    script_path = Path(__file__).resolve()
+    project_root = script_path.parents[1]  # adjust depending on how deep your script is
+
+    # Define the database folder relative to the root
+    storage_dir = project_root / "duckdb_storage"
+    storage_dir.mkdir(parents=True, exist_ok=True)
+
+    # Full path to the DuckDB file
+    db_path = storage_dir / f"{env}.duckdb"
+    print("Using DuckDB file at:", db_path)
 
     # Choose between dev and prod
     if env not in ("dev", "prod"):
         raise ValueError("env must be either 'dev' or 'prod'")
 
-    db_filename = f"{env}.duckdb"
-    db_path = os.path.join(storage_dir, db_filename)
-    db = duckdb.connect(db_path)
+    db = duckdb.connect(str(db_path))
+    #create generators schema
+    db.execute("CREATE SCHEMA IF NOT EXISTS generators")
 
-    # Check if puc_table name already exists
-    table_exists = db.execute(f"""
-        SELECT COUNT(*) 
-        FROM information_schema.tables 
-        WHERE table_name = '{puc_table_name}'
-    """).fetchone()[0] > 0
-
-    # Register DataFrame as a temp view
-    db.register('der_table_view', der_table)
-
-    if not table_exists:
-    # Create puc der table in duckdb from the der_table
-        db.execute(f"CREATE TABLE {puc_table_name} AS SELECT *, CURRENT_TIMESTAMP AS created_at FROM der_table_view")
-        print(f"Table '{puc_table_name}' created.")
-    else:
-        db.execute(f"""
-               INSERT INTO {puc_table_name}
-               SELECT *, CURRENT_TIMESTAMP AS created_at 
-               FROM der_table_view
-           """)
-        print(f"Data appended to existing table '{puc_table_name}'.")
-
-    # Write EIA table
-    table_exists = db.execute(f"""
+    # Helper function to create or append a table
+    def upsert_table(df, table_name):
+        db.register('temp_view', df)
+        table_exists = db.execute(f"""
             SELECT COUNT(*) 
             FROM information_schema.tables 
-            WHERE table_name = '{eia_table_name}'
+            WHERE table_schema = 'generators'
+                AND table_name = '{table_name}'
         """).fetchone()[0] > 0
 
-    # Register DataFrame as a temp view
-    db.register('eia_table_view', eia_table)
+        if not table_exists:
+            db.execute(f"CREATE TABLE generators.{table_name} AS SELECT *, CURRENT_TIMESTAMP AS created_at FROM temp_view")
+            print(f"Table '{table_name}' created.")
+        else:
+            db.execute(f"INSERT INTO generators.{table_name} SELECT *, CURRENT_TIMESTAMP AS created_at FROM temp_view")
+            print(f"Data appended to existing table '{table_name}'.")
 
-    if not table_exists:
-    # Create EIA 860 table in duckdb from the der_table
-        db.execute(f"CREATE TABLE {eia_table_name} AS SELECT *, CURRENT_TIMESTAMP AS created_at FROM eia_table_view")
-        print(f"Table '{eia_table_name}' created.")
-    else:
-        db.execute(f"""
-                      INSERT INTO {eia_table_name}
-                      SELECT *, CURRENT_TIMESTAMP AS created_at 
-                      FROM eia_table_view
-                  """)
-        print(f"Data appended to existing table '{eia_table_name}'.")
+    # Load PUC DER table
+    upsert_table(der_table, puc_table_name)
+
+    # Load EIA table
+    upsert_table(eia_table, eia_table_name)
 
     db.close()
