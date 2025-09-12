@@ -32,6 +32,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   generator_dbt_project:
     common:
+      +schema: generators
       staging:
         materialized: view
       dimensions:
@@ -39,6 +40,7 @@ models:
       marts:
         materialized: table
     solar:
+      +schema: generators
       staging:
         materialized: view
       dimensions:
@@ -46,6 +48,7 @@ models:
       marts:
         materialized: table
     wind:
+      +schema: generators
       staging:
         materialized: view
       dimensions:
@@ -53,11 +56,19 @@ models:
       marts:
         materialized: table
     storage:
+      +schema: generators
       staging:
         materialized: view
       dimensions:
         materialized: view
       marts:
         materialized: table
-
+    consumer_forecast:
+      +schema: forecast
+      staging:
+        materialized: view
+      dimensions:
+        materialized: view
+      marts:
+        materialized: table
 

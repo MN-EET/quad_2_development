@@ -6,3 +6,11 @@ sources:
     tables:
       - name: puc_der_2023
       - name: eia_860_generators_2023
+
+  - name: raw_forecast
+    schema: main_forecast
+    tables:
+      - name: mn_consumers_2023
+      - name: consumption_2023
+      - name: load_and_generation_summer_2023
+      - name: load_and_generation_winter_2023
