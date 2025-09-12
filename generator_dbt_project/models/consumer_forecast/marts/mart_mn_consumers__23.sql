@@ -5,7 +5,7 @@ SELECT
 	customer_count,
 	mwh
 
-FROM forecast.mn_consumers_2023
+FROM main_forecast.mn_consumers_2023
 
 WHERE
 	customer_count IS NOT NULL

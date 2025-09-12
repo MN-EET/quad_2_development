@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     excel_files = [
         r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumers\MN Consumers 2023.xlsx",
-        r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumption\Consumption 2023.xlsx"
+        r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumption\Consumption 2023 TRADE SECRET.xlsx"
     ]
 
     load_forecast_excels(excel_files, env="dev")
