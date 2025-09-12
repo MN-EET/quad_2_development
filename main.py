@@ -16,6 +16,8 @@ from scripts.qry_solar_mart import fetch_solar_capacity
 from scripts.qry_wind_mart import fetch_wind_capacity
 from scripts.qry_storage_mart import fetch_storage_capacity
 from scripts.miso_annual import fetch_miso_annual
+from scripts.qry_net_generation_forecast_mart import fetch_net_generation_forecast
+from scripts.qry_mn_consumers_forecast_mart import fetch_mn_consumers_forecast
 
 # Define main
 
@@ -61,6 +63,11 @@ def main():
     # fetch storage capacity
     fetch_storage_capacity(db, destdir)
 
+    # fetch net generation forecast
+    fetch_net_generation_forecast(db, destdir)
+
+    # fetch mn consumers forecast
+    fetch_mn_consumers_forecast(db, destdir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
