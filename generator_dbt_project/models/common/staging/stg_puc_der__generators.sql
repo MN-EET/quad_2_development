@@ -14,6 +14,6 @@ SELECT
 	created_at,
 	report_year
 
-FROM generators.raw_puc_der rpd
+FROM main_generators.raw_puc_der rpd
 
-WHERE created_at = (SELECT MAX(created_at) FROM main.raw_puc_der)
+WHERE created_at = (SELECT MAX(created_at) FROM main_generators.raw_puc_der)

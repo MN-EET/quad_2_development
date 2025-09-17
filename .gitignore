@@ -20,6 +20,7 @@ MISO Hourly Pull.ipynb
 Nuclear Locations Dev.ipynb
 Battery Capacity dev.ipynb
 MISO Queue Dev.ipynb
+miso_annual_pull.ipynb
 
 # Generator database
 duckdb_storage/dev.duckdb

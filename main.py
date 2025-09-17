@@ -30,13 +30,13 @@ def main():
     destdir = r'C:\Users\dduffy\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - Documents\data'
 
     # fetch generation data
-    #fetch_generation(eia_key, destdir)
+    fetch_generation(eia_key, destdir)
 
     # fetch monthly generation generation data
-    #fetch_monthly_gen(eia_key, destdir)
+    fetch_monthly_gen(eia_key, destdir)
 
     # fetch henry hub natural gas spot prices
-    #fetch_henry_hub(eia_key, destdir)
+    fetch_henry_hub(eia_key, destdir)
 
     # fetch miso hourly
     fetch_miso_hourly(eia_key, destdir)
