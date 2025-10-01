@@ -2,7 +2,7 @@ import pandas as pd
 import duckdb
 from pathlib import Path
 
-def load_forecast_excels(file_paths, env="dev"):
+def load_forecast_excels(file_paths, env="prod"):
     """
     Load multiple Excel files into a DuckDB schema called 'main_forecast'.
     Uses the same project-root-based path setup as the generator ETL script.
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     project_root = script_path.parents[1]
 
     excel_files = [
-        r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumers\MN Consumers 2023.xlsx",
-        r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumption\Consumption 2023 TRADE SECRET.xlsx"
+        r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumers\MN Consumers 2024.xlsx",
+        r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumption\Consumption 2024 TRADE SECRET.xlsx"
     ]
 
-    load_forecast_excels(excel_files, env="dev")
+    load_forecast_excels(excel_files, env="prod")

@@ -7,5 +7,6 @@ def fetch_wind_capacity(db: str, destdir: str):
     # query mart_total__wind_capacity
     wind_capacity = db_con.execute(f'SELECT * FROM main_generators.mart_total__wind_capacity').fetchdf()
     db_con.close()
+
     # Write dataframe to destdir
     wind_capacity.to_csv(destdir + "/wind_capacity.csv", index = False)

@@ -10,7 +10,7 @@ sources:
   - name: raw_forecast
     schema: main_forecast
     tables:
-      - name: mn_consumers_2023
-      - name: consumption_2023
+      - name: mn_consumers_2024
+      - name: consumption_2024_trade_secret
       - name: load_and_generation_summer_2023
       - name: load_and_generation_winter_2023
