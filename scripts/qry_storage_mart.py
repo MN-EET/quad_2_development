@@ -5,7 +5,7 @@ def fetch_storage_capacity(db: str, destdir: str):
     db_con = duckdb.connect(db) #filepath to production duckdb database in duckdb_storage
 
     # query mart_combined__storage_capacity
-    storage_capacity = db_con.execute(f'SELECT * FROM main_generators.mart_combined__storage_capacity').fetchdf()
+    storage_capacity = db_con.execute(f'SELECT * FROM main_generators.mart_combined__storage_capacity WHERE year_interconnected <= 2024').fetchdf()
     db_con.close()
 
     max_year = storage_capacity['year_interconnected'].max()
