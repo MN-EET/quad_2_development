@@ -51,7 +51,7 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
     # Coerce utlity IDs to numeric to scrap the comment that is typically at the bottom of the table
     eia_table['utility_id'] = pd.to_numeric(eia_table['utility_id'], errors="coerce")
 
-    # ⭐ DUCKDB COERCION PREP: Clean whitespace-only strings to None for all object columns
+    # DUCKDB COERCION PREP: Clean whitespace-only strings to None for all object columns
     # This allows DuckDB to handle type conversion automatically during INSERT
     for col in eia_table.select_dtypes(include=['object']).columns:
         eia_table[col] = eia_table[col].replace(r'^\s*$', None, regex=True)
@@ -82,7 +82,7 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
 
     # Helper function to create or append a table
     def upsert_table(df, table_name):
-        # ⭐ DUCKDB COERCION STEP 1: Register the pandas DataFrame as a temporary view
+        # DUCKDB COERCION STEP 1: Register the pandas DataFrame as a temporary view
         # DuckDB will infer types from the pandas dtypes
         db.register('temp_view', df)
 
@@ -94,13 +94,13 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
         """).fetchone()[0] > 0
 
         if not table_exists:
-            # ⭐ DUCKDB COERCION STEP 2: CREATE TABLE - DuckDB creates schema from temp_view
+            # DUCKDB COERCION STEP 2: CREATE TABLE - DuckDB creates schema from temp_view
             # Type conversion happens automatically based on pandas dtypes
             db.execute(
                 f"CREATE TABLE main_generators.{table_name} AS SELECT *, CURRENT_TIMESTAMP AS created_at FROM temp_view")
             print(f"Table '{table_name}' created.")
         else:
-            # ⭐ DUCKDB COERCION STEP 3: INSERT - DuckDB automatically casts temp_view columns
+            # DUCKDB COERCION STEP 3: INSERT - DuckDB automatically casts temp_view columns
             # to match the existing table schema. This is where the magic happens!
             # DuckDB will try to convert types intelligently (e.g., string '123' -> integer 123)
             db.execute(f"INSERT INTO main_generators.{table_name} SELECT *, CURRENT_TIMESTAMP AS created_at FROM temp_view")
