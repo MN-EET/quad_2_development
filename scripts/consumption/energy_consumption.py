@@ -1,35 +1,58 @@
 import pandas as pd
 from requests import get
 
-def consumption_query(series_id: str, eia_key: str):
+def consumption_query(series_id: str, area: str, eia_key: str):
 
     response = get(
             "https://api.eia.gov/v2/seds/data/?frequency=annual&data[0]=value&api_key=" +
              eia_key +
             "&facets[seriesId][]=" +
              series_id +
-            "&facets[stateId][]=MN&sort[0][column]=period&sort[0][direction]=desc&offset=0&length=5000")
+            "&facets[stateId][]=" +
+            area +
+            "&sort[0][column]=period&sort[0][direction]=desc&offset=0&length=5000")
 
     data_return = pd.json_normalize(response.json()['response']['data'])
+
+    data_return['area'] = area
 
     return(data_return)
 
 def fetch_energy_consumption(eia_key: str, destdir: str):
-    petro = consumption_query("PMTCB", eia_key)
-    imports = consumption_query("ELNIB", eia_key)
-    coal = consumption_query("CLTCB", eia_key)
-    net_interstate = consumption_query("ELISB", eia_key)
-    renewables = consumption_query("RETCB", eia_key)
-    gas = consumption_query("NNTCB", eia_key)
-    nuclear = consumption_query("NUETB", eia_key)
-    total = consumption_query("TETCB", eia_key)
+
+    petro_mn = consumption_query("PMTCB", "MN", eia_key)
+    imports_mn = consumption_query("ELNIB", "MN", eia_key)
+    coal_mn = consumption_query("CLTCB", "MN", eia_key)
+    net_interstate_mn = consumption_query("ELISB", "MN", eia_key)
+    renewables_mn = consumption_query("RETCB", "MN", eia_key)
+    gas_mn = consumption_query("NNTCB", "MN", eia_key)
+    nuclear_mn = consumption_query("NUETB", "MN", eia_key)
+    total_mn = consumption_query("TETCB", "MN", eia_key)
+
+    petro_us = consumption_query("PMTCB", "US", eia_key)
+    imports_us = consumption_query("ELNIB", "US", eia_key)
+    coal_us = consumption_query("CLTCB", "US", eia_key)
+    net_interstate_us = consumption_query("ELISB", "US", eia_key)
+    renewables_us = consumption_query("RETCB", "US", eia_key)
+    gas_us = consumption_query("NNTCB", "US", eia_key)
+    nuclear_us = consumption_query("NUETB", "US", eia_key)
+    total_us = consumption_query("TETCB", "US", eia_key)
 
     # subset total and rename value
-    total_subset = total[["period", "value"]]
+    total_mn_subset = total_mn[["period", "value", "area"]]
+    total_us_subset = total_us[["period", "value", "area"]]
+
+    total_subset = pd.concat([total_mn_subset, total_us_subset])
+
     total_subset = total_subset.rename(columns={"value": "total_consumption"})
 
-    consumption = pd.concat([petro, imports, coal, net_interstate, renewables, gas, nuclear, total], ignore_index=True)
-    consumption = consumption.merge(total_subset, on="period")
+    # Append tables together
+    consumption = pd.concat(
+        [petro_mn, imports_mn, coal_mn, net_interstate_mn, renewables_mn, gas_mn, nuclear_mn, total_mn,
+         petro_us, imports_us, coal_us, net_interstate_us, renewables_us, gas_us, nuclear_us, total_us],
+        ignore_index=True)
+
+    consumption = consumption.merge(total_subset, on = ["period", "area"])
     consumption = consumption.astype({"period": int, "value": float, "total_consumption": float})
     consumption['percent'] = consumption["value"] / consumption["total_consumption"]
 

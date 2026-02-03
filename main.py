@@ -31,44 +31,44 @@ def main():
     destdir = r'C:\Users\dduffy\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - Documents\data'
 
     # fetch generation data
-    fetch_generation(eia_key, destdir)
+    #fetch_generation(eia_key, destdir)
 
     # fetch monthly generation generation data
-    fetch_monthly_gen(eia_key, destdir)
+    #fetch_monthly_gen(eia_key, destdir)
 
     # fetch henry hub natural gas spot prices
-    fetch_henry_hub(eia_key, destdir)
+    #fetch_henry_hub(eia_key, destdir)
 
     # fetch miso hourly
-    fetch_miso_hourly(eia_key, destdir)
+    #fetch_miso_hourly(eia_key, destdir)
 
     # fetch annual MISO generation data
-    fetch_miso_annual(eia_key, destdir)
+    #fetch_miso_annual(eia_key, destdir)
 
     # fetch nuclear facilities
-    fetch_nuclear_facilities(eia_key, destdir)
+    #fetch_nuclear_facilities(eia_key, destdir)
 
     # fetch battery capacity
-    fetch_battery_capacity(eia_key, destdir)
+    #fetch_battery_capacity(eia_key, destdir)
 
     # fetch MISO queue
-    fetch_miso_queue(destdir)
+    #fetch_miso_queue(destdir)
 
     # fetch solar capacity
-    db = 'duckdb_storage/prod.duckdb' # use this database to export all capacity figures
-    fetch_solar_capacity(db, destdir)
+    #db = 'duckdb_storage/prod.duckdb' # use this database to export all capacity figures
+    #fetch_solar_capacity(db, destdir)
 
     # fetch wind capacity
-    fetch_wind_capacity(db, destdir)
+    #fetch_wind_capacity(db, destdir)
 
     # fetch storage capacity
-    fetch_storage_capacity(db, destdir)
+    #fetch_storage_capacity(db, destdir)
 
     # fetch net generation forecast
-    fetch_net_generation_forecast(db, destdir)
+    #fetch_net_generation_forecast(db, destdir)
 
     # fetch mn consumers forecast
-    fetch_mn_consumers_forecast(db, destdir)
+    #fetch_mn_consumers_forecast(db, destdir)
 
     # fetch energy consumption
     fetch_energy_consumption(eia_key, destdir)
