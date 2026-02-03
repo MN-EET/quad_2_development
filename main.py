@@ -5,19 +5,19 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import os
 from dotenv import load_dotenv
-from scripts.electricity_generation import fetch_generation
-from scripts.monthly_generation import fetch_monthly_gen
-from scripts.natural_gas import fetch_henry_hub
-from scripts.miso_hourly import fetch_miso_hourly
-from scripts.nuclear_facilities import fetch_nuclear_facilities
-from scripts.battery_capacity import fetch_battery_capacity
-from scripts.miso_queue import fetch_miso_queue
-from scripts.qry_solar_mart import fetch_solar_capacity
-from scripts.qry_wind_mart import fetch_wind_capacity
-from scripts.qry_storage_mart import fetch_storage_capacity
-from scripts.miso_annual import fetch_miso_annual
-from scripts.qry_net_generation_forecast_mart import fetch_net_generation_forecast
-from scripts.qry_mn_consumers_forecast_mart import fetch_mn_consumers_forecast
+from scripts.generation.electricity_generation import fetch_generation
+from scripts.generation.monthly_generation import fetch_monthly_gen
+from scripts.generation.natural_gas import fetch_henry_hub
+from scripts.generation.miso_hourly import fetch_miso_hourly
+from scripts.generation.nuclear_facilities import fetch_nuclear_facilities
+from scripts.generation.battery_capacity import fetch_battery_capacity
+from scripts.generation.miso_queue import fetch_miso_queue
+from scripts.generation.qry_solar_mart import fetch_solar_capacity
+from scripts.generation.qry_wind_mart import fetch_wind_capacity
+from scripts.generation.qry_storage_mart import fetch_storage_capacity
+from scripts.generation.miso_annual import fetch_miso_annual
+from scripts.generation.qry_net_generation_forecast_mart import fetch_net_generation_forecast
+from scripts.generation.qry_mn_consumers_forecast_mart import fetch_mn_consumers_forecast
 
 # Define main
 
