@@ -40,7 +40,7 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
 
         if eia_table is None:
             raise FileNotFoundError("No file starting with '3_1_Generator' found in the ZIP archive.")
-./
+
         with z.open(eia_table) as file:
             eia_table = pd.read_excel(file, skiprows=1)
 
