@@ -73,5 +73,43 @@ def fetch_energy_consumption(eia_key: str, destdir: str):
 
     consumption = consumption.rename(columns={'seriesDescription': 'fuel_type'})
 
+    # Create labels for line graphs
+    max_year = consumption['period'].max()
+
+    consumption['percent_label'] = consumption.apply(
+
+        lambda x: f"{round(x['percent'] * 100, 1)}%"
+        if x['period'] == max_year
+        else None,
+        axis=1
+
+    )
+
+    consumption['total_label'] = consumption.apply(
+
+        lambda x: x['value']
+        if x['period'] == max_year
+        else None,
+        axis = 1
+
+    )
+
+    # Include column with 25% consumption for renewable consumption goal
+
+    # get total consumption for MN in the max year in the dataset
+    top_year = consumption.loc[(consumption['period'] == max_year) & (consumption['stateId'] == "MN"), [
+        'total_consumption']].drop_duplicates().reset_index(drop=True).iloc[0]
+
+    # calculate the 25% figure
+
+    consumption['renewable_goal'] = consumption.apply(
+
+        lambda x: top_year * .25
+        if x['stateId'] == 'MN'
+        else None,
+        axis=1
+
+    )
+
     consumption.to_csv(destdir + "/total_energy_consumption.csv", index = False)
 
