@@ -794,6 +794,17 @@ cd generator_dbt_project && dbt debug && cd ..
 
 </details>
 
+<details>
+<summary><b>Regional Energy Information System (REIS)</b></summary>
+
+- **Source:** Minnesota Department of Commerce
+- **Data:** Electricity forecasts based on utility data collected and processed directly by the Minnesota Department of Commerce
+- **Format:** Excel files stored locally or on shared drives
+- **Usage:** Loaded into the DuckDB database using `scripts/generation/load_reis_forecasts.py`
+- **Note:** These are internally-produced datasets specific to Minnesota energy planning and analysis
+
+</details>
+
 ---
 
 ## Support
