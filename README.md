@@ -29,7 +29,7 @@ The Quad 2.0 Generation Data Pipeline is an ETL system that collects, processes,
 - **PowerBI** - Visualization and dashboarding
 
 ### Data Flow
-1. **Load Raw Data** → Run `load_generators.py` to fetch PUC and EIA generator data into DuckDB
+1. **Load Raw Data** → Run `scripts/generation/load_generators.py` to fetch PUC and EIA generator data into DuckDB, and optionally run `scripts/generation/load_reis_forecasts.py` to load local forecast Excel files
 2. **Transform Data** → Run dbt models to clean and transform raw data into analysis-ready marts
 3. **Export Data** → Run `main.py` to export CSV files for PowerBI dashboards
 
@@ -170,12 +170,14 @@ The dbt profile configuration should work automatically. The `profiles.yml` file
 <details>
 <summary><b>Understanding the Database Creation Process</b></summary>
 
-The DuckDB database stores raw generator capacity data from EIA and PUC sources. The `load_generators.py` script:
+The DuckDB database stores raw generator capacity data from EIA and PUC sources. The `scripts/generation/load_generators.py` script:
 
 - Downloads the latest PUC Distributed Energy Resources (DER) Excel file
 - Downloads the latest EIA Form 860 generator data (ZIP file)
 - Creates a DuckDB database at `duckdb_storage/dev.duckdb` (or `prod.duckdb`)
 - Loads data into tables named `raw_puc_der` and `raw_eia_860_generators`
+
+Additionally, the `scripts/generation/load_reis_forecasts.py` script loads local forecast Excel files into the database's `main_forecast` schema.
 
 </details>
 
@@ -184,9 +186,9 @@ The DuckDB database stores raw generator capacity data from EIA and PUC sources.
 
 ### ⚠️ IMPORTANT: Verify URLs Before Running
 
-Before running `load_generators.py`, verify that the URLs point to the most recent data.
+Before running `scripts/generation/load_generators.py`, verify that the URLs point to the most recent data.
 
-Open `load_generators.py` and check:
+Open `scripts/generation/load_generators.py` and check:
 - **PUC URL:** Check https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/ for the latest file
 - **EIA URL:** Check https://www.eia.gov/electricity/data/eia860/ for the latest year's data
 
@@ -200,7 +202,7 @@ Update the `report_year` parameter to match the data year (typically the previou
 With your virtual environment activated and URLs verified:
 
 ```bash
-python load_generators.py
+python scripts/generation/load_generators.py
 ```
 
 **Expected output:**
@@ -221,6 +223,52 @@ The script will:
 The `env` parameter controls which database to use:
 - `env="dev"` → Creates/uses `duckdb_storage/dev.duckdb` (recommended for testing)
 - `env="prod"` → Creates/uses `duckdb_storage/prod.duckdb` (for final production data)
+
+</details>
+
+<details>
+<summary><b>Loading Forecast Data (Optional)</b></summary>
+
+### What is load_reis_forecasts.py?
+
+The `scripts/generation/load_reis_forecasts.py` script loads local Excel forecast files into the DuckDB database under the `main_forecast` schema. These are internally-produced forecast files that your team creates and stores on a shared drive or local directory.
+
+### When to run this script
+
+Run this script if you have forecast Excel files that need to be transformed by dbt and exported. This is separate from the generator capacity data pipeline.
+
+### Configuring file paths
+
+1. Open `scripts/generation/load_reis_forecasts.py`
+2. Update the `excel_files` list with paths to your local forecast Excel files:
+
+```python
+excel_files = [
+    r"C:\path\to\your\MN Consumers 2024.xlsx",
+    r"C:\path\to\your\Consumption 2024.xlsx"
+]
+```
+
+3. Update the `env` parameter if needed (`"dev"` or `"prod"`)
+
+### Running the script
+
+```bash
+python scripts/generation/load_reis_forecasts.py
+```
+
+**Expected output:**
+```
+Using DuckDB file at: /path/to/quad_2_development/duckdb_storage/prod.duckdb
+Loading MN Consumers 2024.xlsx into main_forecast.mn_consumers_2024
+Loading Consumption 2024.xlsx into main_forecast.consumption_2024
+All main_forecast Excel files loaded.
+```
+
+The script will:
+- Create the `main_forecast` schema if it doesn't exist
+- Load each Excel file as a table (filename becomes table name)
+- Clean column names (lowercase, underscores instead of spaces)
 
 </details>
 
@@ -246,7 +294,7 @@ The dbt project is located in the `generator_dbt_project/` folder. It contains S
 ### Transformation Pipeline
 
 ```
-Raw tables (from load_generators.py)
+Raw tables (from load_generators.py and load_reis_forecasts.py)
   ↓
 Staging models (stg_puc__generators, stg_eia__generators)
   ↓
@@ -469,9 +517,9 @@ When new data becomes available (typically annually for EIA and PUC data):
 - **PUC Data:** Visit https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/
 - **EIA Data:** Visit https://www.eia.gov/electricity/data/eia860/
 
-### Step 2: Update load_generators.py
+### Step 2: Update scripts/generation/load_generators.py
 
-Open `load_generators.py` and update:
+Open `scripts/generation/load_generators.py` and update:
 - The PUC URL to the latest file
 - The EIA URL to the latest year (e.g., `eia8602025.zip`)
 - The `report_year` parameter to the new year
@@ -479,7 +527,12 @@ Open `load_generators.py` and update:
 ### Step 3: Reload Database
 
 ```bash
-python load_generators.py
+python scripts/generation/load_generators.py
+```
+
+If you have forecast files to update:
+```bash
+python scripts/generation/load_reis_forecasts.py
 ```
 
 ### Step 4: Re-run dbt Transformations
@@ -574,17 +627,17 @@ EIA_API_KEY=your_key_here
 
 ### Issue: dbt debug shows database connection failed
 
-**Solution:** Make sure you've run `load_generators.py` first to create the DuckDB database. Verify the database exists at `duckdb_storage/dev.duckdb`
+**Solution:** Make sure you've run `scripts/generation/load_generators.py` first to create the DuckDB database. Verify the database exists at `duckdb_storage/dev.duckdb`
 
 ### Issue: dbt run fails with "relation does not exist"
 
-**Solution:** The raw tables haven't been created yet. Run `load_generators.py` to create and populate the raw data tables before running dbt.
+**Solution:** The raw tables haven't been created yet. Run `scripts/generation/load_generators.py` to create and populate the raw data tables before running dbt.
 
 ### Issue: CSV files are empty or missing data
 
 **Solution:** Check that:
 - Your API key is valid and working
-- The URLs in `load_generators.py` point to valid, current data files
+- The URLs in `scripts/generation/load_generators.py` point to valid, current data files
 - dbt models completed successfully before running mart export functions
 
 ### Issue: PowerBI can't find the CSV files
@@ -606,14 +659,15 @@ quad_2_development/
 ├── .gitignore                    # Git ignore patterns
 ├── requirements.txt              # Python dependencies
 ├── main.py                       # Main export script
-├── load_generators.py            # Database creation script
-├── build_generator_file.py       # Database builder function
 ├── README.md                     # This file
 ├── duckdb_storage/               # DuckDB databases
 │   ├── dev.duckdb                # Development database
 │   └── prod.duckdb               # Production database
 ├── scripts/                      # Data extraction scripts
 │   └── generation/               # Generation data scripts
+│       ├── load_generators.py    # Database creation script (PUC/EIA data)
+│       ├── load_reis_forecasts.py # Forecast data loader (local Excel files)
+│       ├── build_generator_file.py # Database builder function
 │       ├── electricity_generation.py
 │       ├── monthly_generation.py
 │       ├── natural_gas.py
@@ -658,14 +712,15 @@ quad_2_development/
 6. Configure output directory in `main.py` (OneDrive location)
 
 ### Creating/Updating Database and Exporting Data
-1. Update URLs in `load_generators.py` (check for latest data)
-2. Run: `python load_generators.py`
-3. Navigate to dbt project: `cd generator_dbt_project`
-4. Run dbt: `dbt run`
-5. Return to project root: `cd ..`
-6. Edit `main.py` to uncomment desired export functions
-7. Run: `python main.py`
-8. Connect PowerBI to exported CSV files in OneDrive
+1. Update URLs in `scripts/generation/load_generators.py` (check for latest data)
+2. Run: `python scripts/generation/load_generators.py`
+3. (Optional) Update file paths in `scripts/generation/load_reis_forecasts.py` and run: `python scripts/generation/load_reis_forecasts.py`
+4. Navigate to dbt project: `cd generator_dbt_project`
+5. Run dbt: `dbt run`
+6. Return to project root: `cd ..`
+7. Edit `main.py` to uncomment desired export functions
+8. Run: `python main.py`
+9. Connect PowerBI to exported CSV files in OneDrive
 
 </details>
 
@@ -679,8 +734,11 @@ venv\Scripts\activate
 # Activate virtual environment (Mac/Linux)
 source venv/bin/activate
 
-# Load database with latest data
-python load_generators.py
+# Load database with latest generator data
+python scripts/generation/load_generators.py
+
+# Load database with forecast data (optional)
+python scripts/generation/load_reis_forecasts.py
 
 # Run all dbt models
 cd generator_dbt_project && dbt run && cd ..
@@ -700,7 +758,8 @@ cd generator_dbt_project && dbt debug && cd ..
 - **DuckDB database:** `duckdb_storage/dev.duckdb`
 - **API key:** `.env` file (`EIA_API_KEY=...`)
 - **Output directory config:** `main.py` (`destdir` variable)
-- **Data source URLs:** `load_generators.py`
+- **Generator data source URLs:** `scripts/generation/load_generators.py`
+- **Forecast data file paths:** `scripts/generation/load_reis_forecasts.py`
 - **dbt configuration:** `generator_dbt_project/dbt_project.yml`
 - **Database connection:** `generator_dbt_project/profiles.yml`
 
@@ -744,3 +803,6 @@ For questions or support, contact the Minnesota Department of Commerce
 
 ---
 
+## License
+
+This project is maintained by the Minnesota Department of Commerce.
