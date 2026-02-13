@@ -1,62 +1,746 @@
-# Quad 2.0
+# Quad 2.0 - Generation Data Pipeline
+
+Welcome to the code repository for Quad 2.0! This project contains the ETL pipeline used to generate energy generation data for the Minnesota Department of Commerce's State Energy Policy and Conservation Report.
 
 ## Table of Contents
-- [Project Overview](#overview)
+- [Project Overview](#project-overview)
+- [Prerequisites](#prerequisites)
 - [Setup Instructions](#setup-instructions)
+- [Creating the DuckDB Database](#creating-the-duckdb-database)
+- [Running dbt Transformations](#running-dbt-transformations)
+- [Exporting Data](#exporting-data)
+- [Updating Data](#updating-data)
+- [Testing and Troubleshooting](#testing-and-troubleshooting)
+- [Project Structure](#project-structure)
+- [Quick Reference](#quick-reference)
 - [Data Sources](#data-sources)
-- [ETL Process](#etl-process)
-- [Dashboards](#dashboards)
 
-## Overview
-Welcome to the code repository of Quad 2.0! This site will contain all the code used to generate the data displayed in 
-the Minnesota Department of Commerce's online version of the State Energy Policy and Conservation Report.
+---
+
+## Project Overview
+
+The Quad 2.0 Generation Data Pipeline is an ETL system that collects, processes, and exports energy generation data for Minnesota and the MISO region.
+
+### Technology Stack
+- **Python 3.12.6** - Data extraction and processing
+- **DuckDB** - Embedded analytical database
+- **dbt (data build tool)** - SQL-based transformations
+- **Pandas** - Data manipulation
+- **PowerBI** - Visualization and dashboarding
+
+### Data Flow
+1. **Load Raw Data** → Run `load_generators.py` to fetch PUC and EIA generator data into DuckDB
+2. **Transform Data** → Run dbt models to clean and transform raw data into analysis-ready marts
+3. **Export Data** → Run `main.py` to export CSV files for PowerBI dashboards
+
+---
+
+## Prerequisites
 
 <details>
-<summary>Setup Instructions</summary>
+<summary><b>Required Software</b></summary>
 
-In order to setup the project on your local computer, follow these steps:
+- **Python 3.12.6 or higher** - [Download here](https://www.python.org/downloads/)
+- **Git** - For cloning the repository
+- **OneDrive** - Required for PowerBI cloud connections (output files must be stored in OneDrive)
+- **PowerBI Desktop** - For connecting to exported data
 
-### Prerequisites
-- Install python 3.12.6: [Download here](https://www.python.org/downloads/)
+</details>
 
-### Clone the project repository
-```commandline
+<details>
+<summary><b>Required API Access</b></summary>
+
+### EIA API Key (Free)
+
+You need a free API key from the U.S. Energy Information Administration.
+
+**To obtain an EIA API key:**
+1. Visit https://www.eia.gov/opendata/register.php
+2. Register for a free account
+3. Check your email for your API key
+4. Save this key - you'll add it to your `.env` file during setup
+
+</details>
+
+---
+
+## Setup Instructions
+
+<details>
+<summary><b>Step 1: Clone the Repository</b></summary>
+
+```bash
 git clone https://github.com/MN-EET/quad_2_development
+cd quad_2_development
 ```
-### Create and activate your virtual environment
 
-```commandline
+</details>
+
+<details>
+<summary><b>Step 2: Create a Virtual Environment</b></summary>
+
+**Windows:**
+```bash
 python -m venv venv
+venv\Scripts\activate
 ```
 
-```commandline
+**Mac/Linux:**
+```bash
+python -m venv venv
 source venv/bin/activate
 ```
-Install all required packages:
 
-```commandline
+</details>
+
+<details>
+<summary><b>Step 3: Install Required Packages</b></summary>
+
+With your virtual environment activated:
+
+```bash
 pip install -r requirements.txt
 ```
 
-Copy .env.example to .env:
-```commandline
-cp .env.example .env
-```
-Transfer any required API keys to .env. (For more details, see data documentation in docs).
-
-### Folder Structure
-make sure the following folders exist:
-```commandline
-/docs
-/scripts
-```
-
+This installs:
+- pandas - Data manipulation
+- duckdb - Embedded database
+- dbt-duckdb - dbt adapter for DuckDB
+- python-dotenv - Environment variable management
+- And other required packages
 
 </details>
 
 <details>
-<summary>Data Sources</summary>
+<summary><b>Step 4: Configure Environment Variables</b></summary>
 
-The project makes use of the following data sources. For detailed information about specific APIs, see API doc...
+Create a `.env` file in the project root directory:
+
+1. Create a file named `.env` in the `quad_2_development` directory
+2. Add your EIA API key:
+
+```bash
+EIA_API_KEY=your_api_key_here
+```
+
+**Example:**
+```bash
+EIA_API_KEY=abc123def456ghi789jkl012mno345pq
+```
+
+⚠️ **Important:** No spaces around the equals sign!
 
 </details>
+
+<details>
+<summary><b>Step 5: Configure Output Directory</b></summary>
+
+### ⚠️ CRITICAL: Output Directory Must Be in OneDrive
+
+Output files **must** be stored in OneDrive for PowerBI cloud connections to work properly.
+
+1. Open `main.py`
+2. Update the `destdir` variable to point to your OneDrive folder:
+
+```python
+destdir = r'C:\Users\YOUR_USERNAME\OneDrive\quad_data'
+```
+
+**Replace:**
+- `YOUR_USERNAME` with your Windows username
+- `quad_data` with your preferred folder name in OneDrive
+
+3. Create this folder in OneDrive before running the pipeline
+
+</details>
+
+<details>
+<summary><b>Step 6: Verify dbt Configuration</b></summary>
+
+The dbt profile configuration should work automatically. The `profiles.yml` file in the `generator_dbt_project` folder is already configured to use a DuckDB database in the `duckdb_storage` directory.
+
+✅ No manual configuration of dbt profiles is required for most users.
+
+</details>
+
+---
+
+## Creating the DuckDB Database
+
+<details>
+<summary><b>Understanding the Database Creation Process</b></summary>
+
+The DuckDB database stores raw generator capacity data from EIA and PUC sources. The `load_generators.py` script:
+
+- Downloads the latest PUC Distributed Energy Resources (DER) Excel file
+- Downloads the latest EIA Form 860 generator data (ZIP file)
+- Creates a DuckDB database at `duckdb_storage/dev.duckdb` (or `prod.duckdb`)
+- Loads data into tables named `raw_puc_der` and `raw_eia_860_generators`
+
+</details>
+
+<details>
+<summary><b>Updating Data Source URLs</b></summary>
+
+### ⚠️ IMPORTANT: Verify URLs Before Running
+
+Before running `load_generators.py`, verify that the URLs point to the most recent data.
+
+Open `load_generators.py` and check:
+- **PUC URL:** Check https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/ for the latest file
+- **EIA URL:** Check https://www.eia.gov/electricity/data/eia860/ for the latest year's data
+
+Update the `report_year` parameter to match the data year (typically the previous calendar year).
+
+</details>
+
+<details>
+<summary><b>Running load_generators.py</b></summary>
+
+With your virtual environment activated and URLs verified:
+
+```bash
+python load_generators.py
+```
+
+**Expected output:**
+```
+Using DuckDB file at: /path/to/quad_2_development/duckdb_storage/dev.duckdb
+Table 'raw_puc_der' created.
+Table 'raw_eia_860_generators' created.
+```
+
+The script will:
+1. Create the `duckdb_storage/` directory if it doesn't exist
+2. Create `dev.duckdb` (or `prod.duckdb` depending on the env parameter)
+3. Create the `main_generators` schema in the database
+4. Load raw data into tables with automatic timestamps
+
+### Development vs Production
+
+The `env` parameter controls which database to use:
+- `env="dev"` → Creates/uses `duckdb_storage/dev.duckdb` (recommended for testing)
+- `env="prod"` → Creates/uses `duckdb_storage/prod.duckdb` (for final production data)
+
+</details>
+
+---
+
+## Running dbt Transformations
+
+<details>
+<summary><b>Introduction to dbt (For New Users)</b></summary>
+
+### What is dbt?
+
+dbt (data build tool) transforms data in your database using SQL. Instead of writing Python code to clean and combine data, you write SQL SELECT statements that dbt runs in the correct order.
+
+### How does dbt work in this project?
+
+The dbt project is located in the `generator_dbt_project/` folder. It contains SQL files that define transformations:
+
+- **Staging models** - Clean and standardize raw data
+- **Dimension models** - Create lookup tables for categorization
+- **Mart models** - Create final analysis-ready tables
+
+### Transformation Pipeline
+
+```
+Raw tables (from load_generators.py)
+  ↓
+Staging models (stg_puc__generators, stg_eia__generators)
+  ↓
+Technology-specific staging (stg_eia__solar, stg_puc__solar, etc.)
+  ↓
+Final mart tables (mart_combined__solar_capacity, etc.)
+```
+
+</details>
+
+<details>
+<summary><b>Running dbt Commands</b></summary>
+
+Navigate to the dbt project directory:
+
+```bash
+cd generator_dbt_project
+```
+
+### Step 1: Install dbt Dependencies (First Time Only)
+
+If the project uses any dbt packages:
+
+```bash
+dbt deps
+```
+
+> **Note:** If there is no `packages.yml` file, you can skip this step.
+
+### Step 2: Debug and Verify Configuration
+
+Verify that dbt can connect to the DuckDB database:
+
+```bash
+dbt debug
+```
+
+This checks:
+- Python version
+- dbt version
+- Database connection (should find `../duckdb_storage/dev.duckdb`)
+- Project configuration
+
+✅ **Expected:** All checks should pass with `OK` status.
+
+### Step 3: Run All dbt Models
+
+Execute all transformations to create the mart tables:
+
+```bash
+dbt run
+```
+
+This will:
+- Compile all SQL models
+- Execute them in the correct dependency order
+- Create views and tables in the DuckDB database
+
+✅ **Expected:** Summary showing models built successfully.
+
+### Step 4: Return to Project Root
+
+```bash
+cd ..
+```
+
+</details>
+
+<details>
+<summary><b>Running Specific Models</b></summary>
+
+You can run specific models or groups of models:
+
+**Run a single model:**
+```bash
+dbt run --select mart_combined__solar_capacity
+```
+
+**Run all models in a folder:**
+```bash
+dbt run --select solar.marts
+```
+
+**Run a model and all its upstream dependencies:**
+```bash
+dbt run --select +mart_combined__solar_capacity
+```
+
+</details>
+
+<details>
+<summary><b>Verifying dbt Outputs</b></summary>
+
+After running dbt, verify that the mart tables were created:
+
+```python
+python
+>>> import duckdb
+>>> db = duckdb.connect('duckdb_storage/dev.duckdb')
+>>> db.execute('SHOW TABLES FROM main_generators').fetchall()
+>>> exit()
+```
+
+You should see tables like:
+- `mart_combined__solar_capacity`
+- `mart_total__wind_capacity`
+- `mart_combined__storage_capacity`
+
+</details>
+
+---
+
+## Exporting Data
+
+<details>
+<summary><b>Understanding main.py</b></summary>
+
+The `main.py` file contains function calls to various data export scripts. Each function either:
+- Fetches data from EIA APIs, OR
+- Queries transformed data from DuckDB
+
+Then processes and exports CSV files to your configured output directory.
+
+### Types of Export Scripts
+
+**1. API Data Fetchers** - Fetch data directly from EIA APIs:
+- `fetch_generation` - Annual electricity generation by fuel type
+- `fetch_monthly_gen` - Monthly generation data
+- `fetch_henry_hub` - Natural gas spot prices
+- `fetch_miso_hourly` - Hourly generation by fuel type for MISO
+- `fetch_miso_annual` - Annual MISO generation summary
+- `fetch_nuclear_facilities` - Operating nuclear power plants
+- `fetch_battery_capacity` - Battery storage capacity
+- `fetch_miso_queue` - MISO interconnection queue projects
+
+**2. DuckDB Mart Exporters** - Query transformed data from dbt marts:
+- `fetch_solar_capacity` - Exports `mart_combined__solar_capacity`
+- `fetch_wind_capacity` - Exports `mart_total__wind_capacity`
+- `fetch_storage_capacity` - Exports `mart_combined__storage_capacity`
+- `fetch_net_generation_forecast` - Exports forecast data
+- `fetch_mn_consumers_forecast` - Exports consumer forecast data
+
+</details>
+
+<details>
+<summary><b>Running Export Scripts</b></summary>
+
+### Step 1: Edit main.py
+
+Open `main.py` in a text editor. You'll see that most function calls are commented out with `#` symbols.
+
+### Step 2: Uncomment Desired Functions
+
+Remove the `#` from the beginning of the lines for functions you want to run.
+
+**Example - To run all exports:**
+```python
+fetch_generation(eia_key, destdir)
+fetch_monthly_gen(eia_key, destdir)
+fetch_henry_hub(eia_key, destdir)
+# ... and so on
+```
+
+**Example - To run only specific exports:**
+```python
+# fetch_generation(eia_key, destdir)  # Commented out
+fetch_solar_capacity(db, destdir)  # Active
+fetch_wind_capacity(db, destdir)  # Active
+```
+
+### Step 3: Update Database Path for Mart Exports
+
+For functions that query DuckDB (like `fetch_solar_capacity`), uncomment the database path line:
+
+```python
+db = 'duckdb_storage/prod.duckdb'  # or dev.duckdb for testing
+```
+
+### Step 4: Run main.py
+
+Save your changes and run:
+
+```bash
+python main.py
+```
+
+The script will:
+- Fetch data from APIs or query DuckDB
+- Process and format the data
+- Write CSV files to your OneDrive output directory
+
+</details>
+
+<details>
+<summary><b>Verifying Exported Files</b></summary>
+
+After running `main.py`, check your OneDrive output directory. You should see CSV files like:
+
+- `electricity_generation.csv`
+- `monthly_electricity_generation.csv`
+- `henry_hub.csv`
+- `solar_capacity.csv`
+- `wind_capacity.csv`
+- `storage_capacity.csv`
+- And more, depending on which functions you ran
+
+</details>
+
+---
+
+## Updating Data
+
+<details>
+<summary><b>Updating Generator Capacity Data (Annual)</b></summary>
+
+When new data becomes available (typically annually for EIA and PUC data):
+
+### Step 1: Check for New Data Sources
+
+- **PUC Data:** Visit https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/
+- **EIA Data:** Visit https://www.eia.gov/electricity/data/eia860/
+
+### Step 2: Update load_generators.py
+
+Open `load_generators.py` and update:
+- The PUC URL to the latest file
+- The EIA URL to the latest year (e.g., `eia8602025.zip`)
+- The `report_year` parameter to the new year
+
+### Step 3: Reload Database
+
+```bash
+python load_generators.py
+```
+
+### Step 4: Re-run dbt Transformations
+
+```bash
+cd generator_dbt_project
+dbt run
+cd ..
+```
+
+### Step 5: Re-export Data
+
+```bash
+python main.py
+```
+
+</details>
+
+<details>
+<summary><b>Updating API-Based Data (As Needed)</b></summary>
+
+For data that comes directly from EIA APIs (generation, prices, etc.), simply re-run `main.py` with the appropriate functions uncommented. The scripts automatically query the latest available data from the APIs.
+
+</details>
+
+---
+
+## Testing and Troubleshooting
+
+<details>
+<summary><b>Verifying Your Setup</b></summary>
+
+### 1. Check DuckDB Database Exists
+
+```bash
+ls duckdb_storage/
+```
+
+**Expected:** You should see `dev.duckdb` or `prod.duckdb`
+
+### 2. Check Database Contains Data
+
+```python
+python
+>>> import duckdb
+>>> db = duckdb.connect('duckdb_storage/dev.duckdb')
+>>> db.execute('SELECT COUNT(*) FROM main_generators.raw_puc_der').fetchone()
+>>> db.execute('SELECT COUNT(*) FROM main_generators.raw_eia_860_generators').fetchone()
+>>> exit()
+```
+
+**Expected:** Non-zero row counts for both tables
+
+### 3. Check dbt Models Created Tables
+
+```python
+python
+>>> import duckdb
+>>> db = duckdb.connect('duckdb_storage/dev.duckdb')
+>>> db.execute('SHOW TABLES FROM main_generators').fetchall()
+>>> exit()
+```
+
+**Expected:** Tables including `mart_combined__solar_capacity`, `mart_total__wind_capacity`, `mart_combined__storage_capacity`
+
+### 4. Check CSV Files Were Exported
+
+Navigate to your OneDrive output directory and verify that CSV files exist.
+
+</details>
+
+<details>
+<summary><b>Common Issues and Solutions</b></summary>
+
+### Issue: ModuleNotFoundError when running scripts
+
+**Solution:** Make sure your virtual environment is activated:
+```bash
+# Windows
+venv\Scripts\activate
+
+# Mac/Linux
+source venv/bin/activate
+```
+
+### Issue: API request returns 401 Unauthorized
+
+**Solution:** Check that your EIA API key is correctly set in the `.env` file. Make sure there are no spaces around the equals sign:
+```bash
+EIA_API_KEY=your_key_here
+```
+
+### Issue: dbt debug shows database connection failed
+
+**Solution:** Make sure you've run `load_generators.py` first to create the DuckDB database. Verify the database exists at `duckdb_storage/dev.duckdb`
+
+### Issue: dbt run fails with "relation does not exist"
+
+**Solution:** The raw tables haven't been created yet. Run `load_generators.py` to create and populate the raw data tables before running dbt.
+
+### Issue: CSV files are empty or missing data
+
+**Solution:** Check that:
+- Your API key is valid and working
+- The URLs in `load_generators.py` point to valid, current data files
+- dbt models completed successfully before running mart export functions
+
+### Issue: PowerBI can't find the CSV files
+
+**Solution:** Verify that:
+- The output directory path in `main.py` is an OneDrive location
+- OneDrive has synced the files (check the OneDrive icon in your system tray)
+- The file paths in PowerBI match your actual OneDrive directory structure
+
+</details>
+
+---
+
+## Project Structure
+
+```
+quad_2_development/
+├── .env                          # Environment variables (API keys)
+├── .gitignore                    # Git ignore patterns
+├── requirements.txt              # Python dependencies
+├── main.py                       # Main export script
+├── load_generators.py            # Database creation script
+├── build_generator_file.py       # Database builder function
+├── README.md                     # This file
+├── duckdb_storage/               # DuckDB databases
+│   ├── dev.duckdb                # Development database
+│   └── prod.duckdb               # Production database
+├── scripts/                      # Data extraction scripts
+│   └── generation/               # Generation data scripts
+│       ├── electricity_generation.py
+│       ├── monthly_generation.py
+│       ├── natural_gas.py
+│       ├── miso_hourly.py
+│       ├── miso_annual.py
+│       ├── nuclear_facilities.py
+│       ├── battery_capacity.py
+│       ├── miso_queue.py
+│       ├── qry_solar_mart.py     # Exports dbt mart
+│       ├── qry_wind_mart.py      # Exports dbt mart
+│       ├── qry_storage_mart.py   # Exports dbt mart
+│       ├── qry_net_generation_forecast_mart.py
+│       └── qry_mn_consumers_forecast_mart.py
+└── generator_dbt_project/        # dbt transformation project
+    ├── dbt_project.yml            # dbt project config
+    ├── profiles.yml               # dbt database connection
+    └── models/                   # SQL transformation models
+        ├── sources.yml            # Data source definitions
+        ├── common/                # Shared models
+        ├── solar/                 # Solar-specific models
+        │   ├── staging/
+        │   ├── dimensions/
+        │   └── marts/
+        ├── wind/                  # Wind-specific models
+        ├── storage/               # Storage-specific models
+        └── consumer_forecast/     # Forecast models
+```
+
+---
+
+## Quick Reference
+
+<details>
+<summary><b>Complete Workflow Checklist</b></summary>
+
+### Initial Setup (One Time)
+1. Clone repository
+2. Create and activate virtual environment
+3. Install dependencies: `pip install -r requirements.txt`
+4. Get EIA API key from https://www.eia.gov/opendata/register.php
+5. Create `.env` file with API key
+6. Configure output directory in `main.py` (OneDrive location)
+
+### Creating/Updating Database and Exporting Data
+1. Update URLs in `load_generators.py` (check for latest data)
+2. Run: `python load_generators.py`
+3. Navigate to dbt project: `cd generator_dbt_project`
+4. Run dbt: `dbt run`
+5. Return to project root: `cd ..`
+6. Edit `main.py` to uncomment desired export functions
+7. Run: `python main.py`
+8. Connect PowerBI to exported CSV files in OneDrive
+
+</details>
+
+<details>
+<summary><b>Common Commands</b></summary>
+
+```bash
+# Activate virtual environment (Windows)
+venv\Scripts\activate
+
+# Activate virtual environment (Mac/Linux)
+source venv/bin/activate
+
+# Load database with latest data
+python load_generators.py
+
+# Run all dbt models
+cd generator_dbt_project && dbt run && cd ..
+
+# Export data to CSV
+python main.py
+
+# Verify database connection
+cd generator_dbt_project && dbt debug && cd ..
+```
+
+</details>
+
+<details>
+<summary><b>Key File Locations</b></summary>
+
+- **DuckDB database:** `duckdb_storage/dev.duckdb`
+- **API key:** `.env` file (`EIA_API_KEY=...`)
+- **Output directory config:** `main.py` (`destdir` variable)
+- **Data source URLs:** `load_generators.py`
+- **dbt configuration:** `generator_dbt_project/dbt_project.yml`
+- **Database connection:** `generator_dbt_project/profiles.yml`
+
+</details>
+
+---
+
+## Data Sources
+
+<details>
+<summary><b>EIA (U.S. Energy Information Administration)</b></summary>
+
+- **API Documentation:** https://www.eia.gov/opendata/
+- **Form 860 (Generator Data):** https://www.eia.gov/electricity/data/eia860/
+- **Register for API Key:** https://www.eia.gov/opendata/register.php
+
+</details>
+
+<details>
+<summary><b>Minnesota PUC (Public Utilities Commission)</b></summary>
+
+- **DER Data Dashboard:** https://mn.gov/puc/activities/economic-analysis/distributed-energy/der-data-dashboard/
+- **Data:** Distributed Energy Resources reported by utilities
+
+</details>
+
+<details>
+<summary><b>MISO (Midcontinent Independent System Operator)</b></summary>
+
+- **Interconnection Queue:** https://www.misoenergy.org/planning/generator-interconnection/GI_Queue/
+- **API Endpoint:** https://www.misoenergy.org/api/giqueue/getprojects
+
+</details>
+
+---
+
+## Support
+
+For questions or support, contact the Minnesota Department of Commerce  
+**Energy and Environmental Technologies Division**
+
+---
+
