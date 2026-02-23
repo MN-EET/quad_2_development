@@ -324,7 +324,7 @@ The `env` parameter controls which database to use:
 </details>
 
 <details>
-<summary><b>Loading Forecast Data (Optional)</b></summary>
+<summary><b>Loading Forecast Data</b></summary>
 
 ### What is load_reis_forecasts.py?
 
