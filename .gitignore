@@ -11,6 +11,7 @@ ENV/
 
 # PyCharm project files
 .idea/
+.idea/vcs.xml
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
