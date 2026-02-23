@@ -62,7 +62,7 @@ def build_generator_table(puc_url: str, eia_url: str, puc_table_name: str,
     # Create database path
     # Resolve the script path and the project root
     script_path = Path(__file__).resolve()
-    project_root = script_path.parents[1]  # adjust depending on how deep your script is
+    project_root = script_path.parents[2]  # adjust depending on how deep your script is
 
     # Define the database folder relative to the root
     storage_dir = project_root / "duckdb_storage"

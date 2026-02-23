@@ -51,7 +51,7 @@ def load_forecast_excels(file_paths, env="prod"):
 
 if __name__ == "__main__":
     script_path = Path(__file__).resolve()
-    project_root = script_path.parents[1]
+    project_root = script_path.parents[2]
 
     excel_files = [
         r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumers\MN Consumers 2024.xlsx",
