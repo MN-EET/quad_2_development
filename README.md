@@ -155,17 +155,114 @@ destdir = r'C:\Users\YOUR_USERNAME\OneDrive\quad_data'
 </details>
 
 <details>
-<summary><b>Step 6: Verify dbt Configuration</b></summary>
+<summary><b>Step 6: Configure dbt Profiles</b></summary>
 
-The dbt profile configuration should work automatically. The `profiles.yml` file in the `generator_dbt_project` folder is already configured to use a DuckDB database in the `duckdb_storage` directory.
+### Understanding dbt Profiles
 
-✅ No manual configuration of dbt profiles is required for most users.
+The `profiles.yml` file tells dbt how to connect to your database. 
+
+### ⚠️ IMPORTANT: Where to Save profiles.yml
+
+**This is counterintuitive:** The `profiles.yml` file does NOT go in your project folder. Instead, it must be saved in a `.dbt` folder in your home directory.
+
+**File Location:**
+
+- **Windows:** `C:\Users\YOUR_USERNAME\.dbt\profiles.yml`
+- **Mac/Linux:** `~/.dbt/profiles.yml` (which expands to `/Users/YOUR_USERNAME/.dbt/profiles.yml`)
+
+**Setup Steps:**
+
+1. Create the `.dbt` folder in your home directory if it doesn't exist:
+
+   **Windows:**
+   ```bash
+   mkdir %USERPROFILE%\.dbt
+   ```
+
+   **Mac/Linux:**
+   ```bash
+   mkdir ~/.dbt
+   ```
+
+2. Copy the `profiles.yml` file from `generator_dbt_project/profiles.yml` to the `.dbt` folder:
+
+   **Windows:**
+   ```bash
+   copy generator_dbt_project\profiles.yml %USERPROFILE%\.dbt\profiles.yml
+   ```
+
+   **Mac/Linux:**
+   ```bash
+   cp generator_dbt_project/profiles.yml ~/.dbt/profiles.yml
+   ```
+
+**Note:** Even though `profiles.yml` is in your home directory, the database paths inside it (like `../duckdb_storage/dev.duckdb`) are still relative to your **project directory**, not to where the profiles.yml file is stored. This is how dbt works by design.
+
+### Default Configuration
+
+The profiles.yml should contain the following settings:
+
+```yaml
+generator_dbt_project:  
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../duckdb_storage/dev.duckdb
+      threads: 1
+    prod:
+      type: duckdb
+      path: ../duckdb_storage/prod.duckdb
+      threads: 1
+```
+
+### What This Configuration Does
+
+- **target: dev** - By default, dbt will use the `dev` database for development work
+- **type: duckdb** - Specifies that we're using DuckDB as our database
+- **path: ../duckdb_storage/dev.duckdb** - Points to the DuckDB database file (relative to the project directory, not the profiles.yml location)
+- **threads: 1** - Number of concurrent models dbt will run (1 is fine for this project size)
+
+### When to Switch to Production
+
+To use the production database instead of development:
+1. Open `~/.dbt/profiles.yml` (in your home directory)
+2. Change `target: dev` to `target: prod`
+3. Or use the command line flag: `dbt run --target prod`
 
 </details>
 
 ---
 
 ## Creating the DuckDB Database
+
+<details>
+<summary><b>What is DuckDB?</b></summary>
+
+DuckDB is a fast, embedded analytical database that runs directly within your application - no separate server required. Think of it as "SQLite for analytics."
+
+### Why DuckDB for This Project?
+
+- **Embedded** - The entire database is a single file (`.duckdb`) that lives in your project folder
+- **Fast** - Optimized for analytical queries and data transformations
+- **Simple** - No installation or server configuration needed
+- **Portable** - Easy to share and backup (just copy the `.duckdb` file)
+
+### Development vs Production Databases
+
+This project uses two separate database files:
+
+- **dev.duckdb** - For testing and development work
+  - Use this when experimenting with new transformations
+  - Safe to delete and rebuild without affecting production data
+  
+- **prod.duckdb** - For final, production-ready data
+  - Use this for data that will be exported to PowerBI dashboards
+  - Contains the "official" data that stakeholders rely on
+
+By maintaining separate databases, you can test changes in `dev` before applying them to `prod`.
+
+</details>
 
 <details>
 <summary><b>Understanding the Database Creation Process</b></summary>
@@ -307,6 +404,17 @@ Final mart tables (mart_combined__solar_capacity, etc.)
 
 <details>
 <summary><b>Running dbt Commands</b></summary>
+
+### ⚠️ PREREQUISITE: Database Must Exist First
+
+**Before running any dbt commands**, you must create and populate the DuckDB database by running the Python data loading scripts:
+
+1. **Required:** Run `python scripts/generation/load_generators.py` to load generator data
+2. **Optional:** Run `python scripts/generation/load_reis_forecasts.py` to load forecast data
+
+dbt transforms data that already exists in the database - it cannot run on an empty database. If you skip this step, dbt will fail with errors like "relation does not exist."
+
+---
 
 Navigate to the dbt project directory:
 
