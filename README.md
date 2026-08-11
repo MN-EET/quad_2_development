@@ -139,11 +139,11 @@ EIA_API_KEY=abc123def456ghi789jkl012mno345pq
 
 Output files **must** be stored in OneDrive for PowerBI cloud connections to work properly.
 
-1. Open `main.py`
-2. Update the `destdir` variable to point to your OneDrive folder:
+1. Open `.env`
+2. Update the `DESTINATION_DIRECTORY` variable to point to your OneDrive folder:
 
-```python
-destdir = r'C:\Users\YOUR_USERNAME\OneDrive\quad_data'
+```bash
+DESTINATION_DIRECTORY='C:\Users\YOUR_USERNAME\OneDrive\quad_data'
 ```
 
 **Replace:**
