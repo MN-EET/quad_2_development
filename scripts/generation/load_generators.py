@@ -1,6 +1,6 @@
 from build_generator_file import build_generator_table
 
-build_generator_table("https://mn.gov/puc/assets/PUBLIC%20MN%20Utility%20Reported%20DER%20through%2012-31-_Elizabeth%20Ballor_tcm14-708148.xlsx",
+build_generator_table("https://mn.gov/puc/assets/MN%20Utility%20Reported%20DER%20through%202025_tcm14-762187.xlsx",
                       "https://www.eia.gov/electricity/data/eia860/xls/eia8602024.zip",
                       "raw_puc_der",
                       "raw_eia_860_generators",
