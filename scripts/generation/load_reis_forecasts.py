@@ -1,8 +1,10 @@
 import pandas as pd
 import duckdb
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 
-def load_forecast_excels(file_paths, env="prod"):
+def load_forecast_excels(file_paths, env="dev"):
     """
     Load multiple Excel files into a DuckDB schema called 'main_forecast'.
     Uses the same project-root-based path setup as the generator ETL script.
@@ -14,7 +16,7 @@ def load_forecast_excels(file_paths, env="prod"):
 
     # Resolve project root (adjust parents[x] if script lives deeper)
     script_path = Path(__file__).resolve()
-    project_root = script_path.parents[1]
+    project_root = script_path.parents[int(os.getenv("PROJECT_ROOT_DEPTH", "1"))]
 
     # Define DuckDB path relative to root
     storage_dir = project_root / "duckdb_storage"
@@ -58,4 +60,4 @@ if __name__ == "__main__":
         r"I:\Enrgy_div\SEO\CleanEnegyTechUnit\CET Projects\Data Repository\REIS Work\Electric Forecasts\Electric-Forecasts\Consumption\Consumption 2024 TRADE SECRET.xlsx"
     ]
 
-    load_forecast_excels(excel_files, env="prod")
+    load_forecast_excels(excel_files, env="dev")

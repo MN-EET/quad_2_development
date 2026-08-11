@@ -14,6 +14,3 @@ FROM main_forecast.consumption_2023_trade_secret c
 
 WHERE consumption_category = 'Total net generation MWH'
 	OR consumption_category = 'Other'
-
-
-
