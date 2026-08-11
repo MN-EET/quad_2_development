@@ -55,7 +55,6 @@ def main():
     fetch_miso_queue(destdir)
 
     # fetch solar capacity
-    #Change back to prod later
     db = 'duckdb_storage/dev.duckdb' # use this database to export all capacity figures
     fetch_solar_capacity(db, destdir)
 
