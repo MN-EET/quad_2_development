@@ -1,5 +1,7 @@
 import pandas as pd
 import duckdb
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 
 def load_forecast_excels(file_paths, env="dev"):
@@ -14,7 +16,7 @@ def load_forecast_excels(file_paths, env="dev"):
 
     # Resolve project root (adjust parents[x] if script lives deeper)
     script_path = Path(__file__).resolve()
-    project_root = script_path.parents[2]
+    project_root = script_path.parents[int(os.getenv("PROJECT_ROOT_DEPTH", "1"))]
 
     # Define DuckDB path relative to root
     storage_dir = project_root / "duckdb_storage"

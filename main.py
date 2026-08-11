@@ -28,7 +28,7 @@ def main():
     eia_key = os.getenv("EIA_API_KEY")
 
     # Specify directory to write file to
-    destdir = r'C:\Users\EU01242087\OneDrive - State of Minnesota - MN365\Quad 2.0 Data - data'
+    destdir = os.getenv("DESTINATION_DIRECTORY")
 
     # fetch generation data
     fetch_generation(eia_key, destdir)
